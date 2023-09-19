@@ -1,6 +1,7 @@
 const canvas = document.querySelector('canvas')
 const ctx = canvas.getContext('2d')
 const sidebar = document.querySelector('.sidebar')
+let lineArray = []
 
 sidebar.onclick = (e) => {
   const elem = e.target
@@ -8,7 +9,9 @@ sidebar.onclick = (e) => {
   const btn = elem.closest('button')
   select(btn)
 
-  if (elem.classList.contains('circle')) enableDrawingCircle()
+  if (elem.querySelector('.circle')) enableDrawingCircle(elem)
+  if (elem.querySelector('.line')) enableLine(elem)
+  if (elem.querySelector('.square')) enableSquare(elem)
 }
 
 function select(btn) {
@@ -33,7 +36,50 @@ function enableDrawingCircle() {
     }
 
     canvas.onmouseup = () => {
-      // canvas.onmousedown = null
+      canvas.onmousemove = null
+      canvas.onmouseup = null
+    }
+  }
+}
+
+function enableLine() {
+
+  let x1, y1, x2, y2
+  let lineObject = {}
+  canvas.onmousedown = (e) => {
+    x1 = e.offsetX
+    y1 = e.offsetY
+
+    canvas.onmousemove = (e) => {
+      x2 = e.offsetX
+      y2 = e.offsetY
+      clearCanvas()
+      drawLine(x1, y1, x2, y2)
+    }
+    canvas.onmouseup = () => {
+      lineObject = { x1, x2, y1, y2 }
+      canvas.onmousemove = null
+      canvas.onmouseup = null
+    }
+  }
+}
+
+function enableSquare() {
+
+  let x1, y1, x2, y2
+  let lineObject = {}
+  canvas.onmousedown = (e) => {
+    x1 = e.offsetX
+    y1 = e.offsetY
+
+    canvas.onmousemove = (e) => {
+      x2 = e.offsetX
+      y2 = e.offsetY
+      clearCanvas()
+      drawSquare(x1, y1, x2, y2)
+    }
+    canvas.onmouseup = () => {
+      lineObject = { x1, x2, y1, y2 }
       canvas.onmousemove = null
       canvas.onmouseup = null
     }
@@ -51,7 +97,32 @@ function drawEllipse(x1, y1, x2, y2) {
   ctx.stroke()
 }
 
+function drawLine(x1, y1, x2, y2) {
+  ctx.beginPath()
+  ctx.moveTo(x1, y1)
+  ctx.lineTo(x2, y2)
+  ctx.stroke()
+}
+
+function drawSquare(x1, y1, x2, y2) {
+  const sideLength = Math.abs(x2 - x1)
+  ctx.beginPath()
+  ctx.rect(x1, y1, sideLength, sideLength)
+  ctx.stroke()
+}
+
 function clearCanvas() {
   ctx.clearRect(0, 0, canvas.width, canvas.height)
 }
 
+// renderCanvas();
+// function renderCanvas(lineObject) {
+//   lineArray.push(lineObject)
+//   for (char of lineArray) {
+//     ctx.beginPath()
+//     ctx.moveTo(char.x1, char.y1)
+//     ctx.lineTo(char.x2, char.y2)
+//     ctx.stroke()
+//   }
+//   console.log(lineArray)
+// }
