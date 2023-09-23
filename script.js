@@ -5,13 +5,14 @@ const colorInput = document.querySelector('.color')
 const widthInput = document.querySelector('.width')
 let lineWidth = 1
 let color = 'black'
-let shapes = []
+let shapes = [] 
 const draw = {
   line: drawLine,
   ellipse: drawEllipse,
   rect: drawRect,
-
 }
+
+const ls = localStorage
 
 sidebar.onclick = (e) => {
   const elem = e.target
@@ -26,10 +27,21 @@ sidebar.onclick = (e) => {
   if (btn.querySelector('.line')) enableLine()
   if (btn.querySelector('.square')) enableRect()
   if (btn.matches('.clear')) clear()
+  if (btn.matches('.save-file')) saveFile()
+}
+
+drawBackground()
+loadShapes()
+renderShapes()
+
+function drawBackground() {
+  ctx.fillStyle = 'lightblue';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
 
 function clear() {
   shapes = []
+  saveShapes()
   clearCanvas()
 }
 
@@ -47,7 +59,7 @@ function select(btn) {
   btn.classList.add('active-button')
 
   if (activeBtn?.querySelector('.shape') && !btn.querySelector('.shape')) {
-    setTimeout(() => select(activeBtn), 500)
+    setTimeout(() => select(activeBtn), 1000)
   }
 }
 
@@ -66,10 +78,11 @@ function enableEllipse() {
     }
 
     canvas.onmouseup = () => {
-      const ellipse = { type: "ellipse", x1, x2, y1, y2, lineWidth, color}
+      const ellipse = { type: "ellipse", x1, x2, y1, y2, lineWidth, color }
       shapes.push(ellipse)
       canvas.onmousemove = null
       canvas.onmouseup = null
+      saveShapes()
       renderShapes()
     }
   }
@@ -90,11 +103,13 @@ function enableLine() {
       drawLine(x1, y1, x2, y2, lineWidth, color)
     }
     canvas.onmouseup = () => {
-      const line = { type: "line", x1, x2, y1, y2, lineWidth, color}
+      const line = { type: "line", x1, x2, y1, y2, lineWidth, color }
       shapes.push(line)
+      console.log(saveShapes)
       canvas.onmousemove = null
       canvas.onmouseup = null
-      clearCanvas()
+      // clearCanvas()
+      saveShapes()
       renderShapes()
     }
   }
@@ -116,11 +131,12 @@ function enableRect() {
       drawRect(x1, y1, x2, y2, lineWidth, color)
     }
     canvas.onmouseup = () => {
-      const rect = { type: "rect", x1, x2, y1, y2, lineWidth, color}
+      const rect = { type: "rect", x1, x2, y1, y2, lineWidth, color }
       shapes.push(rect)
       canvas.onmousemove = null
       canvas.onmouseup = null
       clearCanvas()
+      saveShapes()
       renderShapes()
     }
   }
@@ -153,14 +169,15 @@ function drawRect(x1, y1, x2, y2, lineWidth, color) {
   ctx.strokeStyle = color
   ctx.lineWidth = lineWidth
   const width = Math.abs(x1 - x2)
-  const height = Math.abs(y1-y2)
+  const height = Math.abs(y1 - y2)
   ctx.beginPath()
-  ctx.rect(Math.min(x1,x2), Math.min(y1,y2), width, height)
+  ctx.rect(Math.min(x1, x2), Math.min(y1, y2), width, height)
   ctx.stroke()
 }
 
 function clearCanvas() {
   ctx.clearRect(0, 0, canvas.width, canvas.height)
+  drawBackground()
 }
 
 function renderShapes() {
@@ -168,4 +185,26 @@ function renderShapes() {
     const { type, x1, y1, x2, y2, lineWidth, color } = shape
     draw[type](x1, y1, x2, y2, lineWidth, color)
   }
+}
+
+function saveFile() {
+  canvas.toBlob((blob) => {
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+
+    a.href = url
+    a.download = 'canvas.png'
+    a.click()
+
+    URL.revokeObjectURL(url)
+
+  })
+}
+
+function saveShapes() {
+  ls.setItem('saveShapes', JSON.stringify(shapes))
+}
+
+function loadShapes() {
+  shapes = JSON.parse(ls.getItem('saveShapes')) || []
 }
